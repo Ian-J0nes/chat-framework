@@ -1,0 +1,48 @@
+server:
+  port: ${CHAT_SERVICE_PORT:18083}
+
+spring:
+  application:
+    name: chat-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
+        enabled: true               # 启用Nacos
+    discovery:
+      enabled: true                 # 启用服务发现
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VHOST:/}
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    template:
+      mandatory: true
+
+logging:
+  level:
+    org.springframework: INFO
+
+# Feign client basic timeouts (milliseconds)
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+
+
+app:
+  mq:
+    exchange: chat.x
+    routing:
+      generate: chat.generate
+      retry: chat.generate.retry
+      dlq: chat.generate.dlq
+  context:
+    # 会话上下文窗口条数（最近 N 条消息），用于发送给 LLM 的 messages。
+    # 可通过环境变量覆盖：APP_CONTEXT_MAX_MESSAGES
+    maxMessages: ${APP_CONTEXT_MAX_MESSAGES:12}

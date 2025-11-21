@@ -1,0 +1,199 @@
+openapi: 3.0.0
+info:
+  title: LLM Service API
+  version: 1.0.0
+  description: LLM服务API定义，支持多模型调用、RAG、Function Calling、MCP协议
+
+servers:
+  - url: http://localhost:8080
+    description: 本地开发环境
+
+paths:
+  /api/llm/chat:
+    post:
+      summary: LLM对话接口
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: 成功响应
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+
+  /api/rag/query:
+    post:
+      summary: RAG检索问答
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RAGRequest'
+      responses:
+        '200':
+          description: 成功响应
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RAGResponse'
+
+  /api/function/call:
+    post:
+      summary: Function Calling
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FunctionRequest'
+      responses:
+        '200':
+          description: 成功响应
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FunctionResponse'
+
+components:
+  schemas:
+    ChatRequest:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+        model:
+          type: string
+          enum: [gpt-4, gpt-3.5-turbo, claude-3, llama-2]
+        userId:
+          type: integer
+          format: int64
+        sessionId:
+          type: string
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 2
+        maxTokens:
+          type: integer
+      required:
+        - messages
+        - model
+        - userId
+
+    ChatMessage:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [user, assistant, system]
+        content:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - role
+        - content
+
+    ChatResponse:
+      type: object
+      properties:
+        response:
+          type: string
+        model:
+          type: string
+        usage:
+          $ref: '#/components/schemas/TokenUsage'
+        sessionId:
+          type: string
+      required:
+        - response
+        - model
+
+    RAGRequest:
+      type: object
+      properties:
+        query:
+          type: string
+        userId:
+          type: integer
+          format: int64
+        knowledgeBase:
+          type: string
+        topK:
+          type: integer
+          default: 5
+      required:
+        - query
+        - userId
+
+    RAGResponse:
+      type: object
+      properties:
+        answer:
+          type: string
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentSource'
+        relevanceScore:
+          type: number
+      required:
+        - answer
+
+    FunctionRequest:
+      type: object
+      properties:
+        functionName:
+          type: string
+        parameters:
+          type: object
+        userId:
+          type: integer
+          format: int64
+      required:
+        - functionName
+        - parameters
+        - userId
+
+    FunctionResponse:
+      type: object
+      properties:
+        result:
+          type: object
+        success:
+          type: boolean
+        error:
+          type: string
+      required:
+        - success
+
+    TokenUsage:
+      type: object
+      properties:
+        promptTokens:
+          type: integer
+        completionTokens:
+          type: integer
+        totalTokens:
+          type: integer
+
+    DocumentSource:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        score:
+          type: number
+        metadata:
+          type: object

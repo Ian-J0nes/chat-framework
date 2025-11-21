@@ -1,0 +1,4 @@
+RAG bootstrap example text.
+This line helps ensure text split and vectorization are working.
+Feel free to replace or add more .txt/.md files.
+

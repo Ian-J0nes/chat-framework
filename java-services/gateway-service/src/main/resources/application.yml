@@ -1,0 +1,88 @@
+server:
+  port: ${GATEWAY_PORT:18081}
+  address: 0.0.0.0
+
+spring:
+  main:
+    web-application-type: reactive
+  application:
+    name: gateway-service
+  data:
+    redis:
+      # 使用环境变量驱动，便于切换主库/写节点；保留当前值为默认。
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      # 短超时，避免远端不稳时长时间卡顿
+      connect-timeout: 1500ms
+      timeout: 1500ms
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
+        enabled: true               # 启用Nacos
+    discovery:
+      enabled: true                 # 启用服务发现
+    gateway:
+      httpclient:
+        connect-timeout: 5000
+        response-timeout: 10s
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:5173"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/user/**
+          filters:
+            - StripPrefix=0
+        - id: llm-service
+          # 直接转发到本机 FastAPI（开发环境）。如需服务发现，可改为 lb://llm-service 并在 Nacos 注册。
+          uri: http://${LLM_SERVICE_HOST:localhost}:${LLM_SERVICE_PORT:18080}
+          predicates:
+            - Path=/api/llm/**
+          filters:
+            - StripPrefix=0
+        - id: chat-service  
+          uri: lb://chat-service
+          predicates:
+            - Path=/api/chat/**
+          filters:
+            - StripPrefix=0
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@userKeyResolver}"
+                rate-limiter: "#{@failOpenRateLimiter}"
+                # RPM=3: 每20秒允许1个请求，桶容量3（支持突发）
+                redis-rate-limiter.replenishRate: 3
+                redis-rate-limiter.burstCapacity: 3
+                redis-rate-limiter.requestedTokens: 60
+        - id: data-service
+          uri: lb://data-service
+          predicates:
+            - Path=/api/data/**
+          filters:
+            - StripPrefix=0
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.cloud.gateway.filter.ratelimit: DEBUG
+    org.springframework.data.redis: INFO
+    org.marre.gateway: DEBUG
+
+# Fail-open 超时阈值（毫秒），可通过环境变量 APP_RATELIMIT_FAILOPEN_TIMEOUTMS 覆盖
+app:
+  ratelimit:
+    failOpenTimeoutMs: ${APP_RATELIMIT_FAILOPEN_TIMEOUTMS:1200}

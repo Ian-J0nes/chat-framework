@@ -1,0 +1,33 @@
+  # 基础框架
+  fastapi==0.104.1          # 高性能异步Web框架，类似Spring Boot
+  uvicorn[standard]==0.24.0 # ASGI服务器，用于运行FastAPI应用
+  pydantic==2.5.0           # 数据验证和序列化，类似Java的Bean Validation
+
+  # LLM API客户端
+  openai>=1.3.0             # OpenAI官方SDK，支持GPT系列模型和OpenAI兼容API
+
+  # HTTP客户端
+  httpx>=0.25.0             # 现代异步HTTP客户端，用于服务间调用
+  requests>=2.31.0          # 传统同步HTTP客户端，备用
+
+  # 配置管理
+  python-dotenv>=1.0.0      # 加载.env环境变量文件
+  pyyaml>=6.0.0            # YAML配置文件解析
+
+  # 日志
+  loguru>=0.7.0            # 强大的日志库，比标准logging更易用
+
+  # 开发工具
+  pytest>=7.4.0           # 单元测试框架
+  black>=23.11.0           # 代码格式化工具
+  flake8>=6.1.0           # 代码规范检查工具
+  
+  # RAG / 向量检索
+  chromadb>=0.5.4         # Chroma 向量数据库客户端（HTTP 连接远程实例）
+  langchain-text-splitters>=0.2.2  # 文本切分（递归字符切分器）
+  pypdf>=4.2.0            # PDF 文本提取（按需使用）
+  tenacity>=8.5.0         # 重试装饰器（嵌入/检索/生成稳健性）
+aio-pika>=9.4.0
+
+# MCP (Model Context Protocol) 支持
+mcp>=1.1.0              # MCP Python SDK

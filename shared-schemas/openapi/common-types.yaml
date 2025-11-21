@@ -1,0 +1,99 @@
+openapi: 3.0.0
+info:
+  title: Chat Microservices - Common Types
+  version: 1.0.0
+  description: Shared data types between Java and Python services
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        email:
+          type: string
+        nickname:
+          type: string
+        avatar:
+          type: string
+        createTime:
+          type: string
+          format: date-time
+        updateTime:
+          type: string
+          format: date-time
+        deleted:
+          type: integer
+      required:
+        - username
+        - email
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        chatRoomId:
+          type: integer
+          format: int64
+        senderId:
+          type: integer
+          format: int64
+        senderName:
+          type: string
+        content:
+          type: string
+        messageType:
+          type: integer
+          description: "1-文本 2-图片 3-文件"
+        sendTime:
+          type: string
+          format: date-time
+        deleted:
+          type: integer
+      required:
+        - chatRoomId
+        - senderId
+        - content
+
+    ChatRoom:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        createTime:
+          type: string
+          format: date-time
+        updateTime:
+          type: string
+          format: date-time
+        deleted:
+          type: integer
+      required:
+        - name
+
+    Result:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        data:
+          type: object
+        success:
+          type: boolean
+      required:
+        - code
+        - message
+        - success
